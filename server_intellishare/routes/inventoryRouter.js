@@ -1,6 +1,6 @@
 const express = require('express');
 const inventoryRouter = express.Router();
-const Meal = require('../modules/inventory');
+const Meal = require('../model/inventory');
 
 inventoryRouter.get('/', async (req, res) => {
     try{

@@ -1,5 +1,5 @@
 const userRouter = require('express').Router();
-const User = require('../modules/User');
+const User = require('../model/User');
 
 userRouter.post('/register', (req, res) => {
     res.json('Register');
