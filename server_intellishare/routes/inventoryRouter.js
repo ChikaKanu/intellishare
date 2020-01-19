@@ -21,12 +21,28 @@ inventoryRouter.get('/:mealId', async (req, res) => {
 });
 
 inventoryRouter.patch('/:mealId', async (req, res) => {
-    
+    try{
+        const updatedMeal = await Meal.updateOne(
+           {_id: req.params.mealId}, {
+               $set: {
+                    name: req.body.name,
+                    description: req.body.description,
+                    provider: req.body.provider,
+                    quantity: req.body.quantity,
+                    price: req.body.price,
+                    reserveStatus: req.body.reserveStatus
+                }
+            }
+        )
+        res.json(updatedMeal);
+    } catch(err){
+        res.json({message: err})
+    }  
 })
 
 inventoryRouter.delete('/:mealId', async (req, res) => {
     try{
-        const removedMeal = await Meal.remove({_id: req.params.mealId});
+        const removedMeal = await Meal.deleteOne({_id: req.params.mealId});
         res.json(removedMeal)
     } catch (err) {
         res.json({message: err});
