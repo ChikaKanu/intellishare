@@ -1,48 +1,62 @@
 const userRouter = require('express').Router();
 const User = require('../model/User');
+const bcrypt = require('bcryptjs');
+// const bcrypt = require('bcrypt');
+const {userRegisterValidation, userLoginValidation} = require('../model/validation');
 
-//Validation
-const Joi = require("@hapi/joi");
-
-const schema = Joi.object({
-    name: Joi.string()
-        .min(4)
-        .required(),
-    email: Joi.string()
-        .min(6)
-        .required()
-        .email(),
-    password: Joi.string()
-        .min(8)
-        .required(),
-    address: Joi.string()
-        .min(8)
-        .required(),
-    postcode: Joi.string()
-        .min(7)
-        .max(7)
-        .required()
-});
 
 userRouter.post('/register', async (req, res) => {
     //lets validate data before we create a user
-        const {error} = schema.validate(req.body);
+        const {error} = userRegisterValidation(req.body);
         if(error){
             return res.status(400).send(error.details[0].message)
-        }
+        };
+    //check if user is in database
+        const emailExists = await User.findOne({email: req.body.email});
+        if(emailExists){
+            return res.status(400).send("Email already exists! Use another email")
+        };
+     //Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+    //add new user
         const user = new User({
             name: req.body.name,
             email: req.body.email,
-            password: req.body.password,
+            password: hashedPassword,
             address: req.body.address,
             postcode: req.body.postcode
         });
         try{
         const savedUser = await user.save();
-            res.send(savedUser);
+            res.send({
+                userId: user._id, 
+                name: user.name,
+                email: user.email
+            });
         }catch(err){
             res.status(400).send(err)
         }
+});
+
+userRouter.post('/login', async (req, res) => {
+    //validate data before loging in a user
+    const {error} = userLoginValidation(req.body);
+    if(error){
+        return res.status(400).send(error.details[0].message)
+    }
+    //check database if user email exists
+    const user = await User.findOne({email: req.body.email});
+    if(!user){
+        return res.status(400).send('Email does not exist')
+    }
+    //check if password is correct
+    const validPass = await bcrypt.compare(req.body.password, user.password);
+    if(!validPass){
+        return res.status(400).send('Invalid password')
+    }
+    res.send('Login successful!')
 });
 
 userRouter.patch("/:userId", async (req, res) => {
@@ -81,9 +95,5 @@ userRouter.get("/", async (req, res) => {
         res.status(400).send(err);
     }
 });
-
-// userRouter.post('/user/login', async (req, res) => {
-//     const user = await User.
-// });
 
 module.exports = userRouter;
