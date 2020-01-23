@@ -34,7 +34,6 @@ const userSchema = mongoose.Schema({
     postcode: {
         type: String,
         required: true
-
     },
 
     date:{

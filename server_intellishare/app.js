@@ -8,7 +8,7 @@ dotenv.config();
 
 //import routes
 const mealsRoute = require('./routes/inventoryRouter');
-const authRoute = require('./routes/auth');
+const authRoute = require('./routes/userAuthRouter');
 
 
 
