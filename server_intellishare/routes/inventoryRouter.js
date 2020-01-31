@@ -1,8 +1,9 @@
 const express = require('express');
 const inventoryRouter = express.Router();
 const Meal = require('../model/inventory');
+const verify = require('./verifyTokens');
 
-inventoryRouter.get('/', async (req, res) => {
+inventoryRouter.get('/', verify, async (req, res) => {
     try{
         const meals = await Meal.find();
         res.json(meals);
@@ -11,7 +12,7 @@ inventoryRouter.get('/', async (req, res) => {
     }
 });
 
-inventoryRouter.get('/:mealId', async (req, res) => {
+inventoryRouter.get('/:mealId', verify, async (req, res) => {
     try{
         const findMeal = await Meal.findById(req.params.mealId);
         res.json(findMeal);
@@ -20,7 +21,7 @@ inventoryRouter.get('/:mealId', async (req, res) => {
     }
 });
 
-inventoryRouter.patch('/:mealId', async (req, res) => {
+inventoryRouter.patch('/:mealId', verify, async (req, res) => {
     try{
         const updatedMeal = await Meal.updateOne(
            {_id: req.params.mealId}, {
@@ -35,12 +36,13 @@ inventoryRouter.patch('/:mealId', async (req, res) => {
             }
         )
         res.json(updatedMeal);
+        res.send(req.user)
     } catch(err){
         res.json({message: err})
     }  
 })
 
-inventoryRouter.delete('/:mealId', async (req, res) => {
+inventoryRouter.delete('/:mealId', verify, async (req, res) => {
     try{
         const removedMeal = await Meal.deleteOne({_id: req.params.mealId});
         res.json(removedMeal)
@@ -49,7 +51,7 @@ inventoryRouter.delete('/:mealId', async (req, res) => {
     };
 });
 
-inventoryRouter.post('/', async (req, res) => {
+inventoryRouter.post('/', verify, async (req, res) => {
     const meal = new Meal({
         name: req.body.name,
         description: req.body.description,
